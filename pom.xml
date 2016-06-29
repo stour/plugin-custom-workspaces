@@ -18,23 +18,23 @@
         <groupId>org.eclipse.che</groupId>
         <version>4.4.0-RC1-SNAPSHOT</version>
     </parent>
-    <artifactId>codenvy-plugin-custom-workspaces-parent</artifactId>
+    <artifactId>codenvy-plugin-customer-factories-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Codenvy Plugin :: Custom Workspaces :: Parent</name>
+    <name>Codenvy Plugin :: Customer Factories :: Parent</name>
     <modules>
-        <module>codenvy-plugin-custom-workspaces-shared</module>
-        <module>codenvy-plugin-custom-workspaces-server</module>
+        <module>codenvy-plugin-customer-factories-shared</module>
+        <module>codenvy-plugin-customer-factories-server</module>
     </modules>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.codenvy</groupId>
-                <artifactId>codenvy-plugin-custom-workspaces-server</artifactId>
+                <artifactId>codenvy-plugin-customer-factories-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codenvy</groupId>
-                <artifactId>codenvy-plugin-custom-workspaces-shared</artifactId>
+                <artifactId>codenvy-plugin-customer-factories-shared</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

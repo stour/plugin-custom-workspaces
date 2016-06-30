@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package com.codenvy.customerfactories.docker;
 
@@ -24,6 +24,8 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class DockerRecipe {
 
@@ -81,14 +83,39 @@ public class DockerRecipe {
     }
 
     public void addInstruction(String instruction, INSTR_POSITION position) {
+        final List<String> lines = Arrays.asList(content.split("\n"));
+
         switch (position) {
             case FIRST:
                 // insert a new line right after FROM line
+                int j;
+                for (j = 0; j < lines.size(); j++) {
+                    if (lines.get(j).startsWith("FROM")) {
+                        break;
+                    }
+                }
+                lines.add(j + 1, instruction);
+                lines.add(j + 2, "\n");
             case LAST:
                 // insert a new line at the end of the file
+                lines.add(instruction);
+                lines.add("\n");
             case BEFORE_CMD:
                 // if Dockerfile contains a CMD line then insert a new line right before
-                // else insert a new line at the end of the file
+                int i;
+                for (i = 0; i < lines.size(); i++) {
+                    if (lines.get(i).startsWith("CMD")) {
+                        break;
+                    }
+                }
+                if (i > 0) {
+                    lines.add(i, instruction);
+                    lines.add(i + 1, "\n");
+                    // otherwise insert a new line at the end of the file
+                } else {
+                    lines.add(instruction);
+                    lines.add("\n");
+                }
         }
     }
 }

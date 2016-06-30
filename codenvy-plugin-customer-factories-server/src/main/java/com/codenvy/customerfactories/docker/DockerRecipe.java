@@ -66,7 +66,7 @@ public class DockerRecipe {
         }
 
         if (response == null) {
-            throw new ServerException("A problem occurred");
+            throw new ServerException("A problem occurred while downloading recipe.");
         }
 
         content = response.asString();
@@ -81,6 +81,14 @@ public class DockerRecipe {
     }
 
     public void addInstruction(String instruction, INSTR_POSITION position) {
-
+        switch (position) {
+            case FIRST:
+                // insert a new line right after FROM line
+            case LAST:
+                // insert a new line at the end of the file
+            case BEFORE_CMD:
+                // if Dockerfile contains a CMD line then insert a new line right before
+                // else insert a new line at the end of the file
+        }
     }
 }

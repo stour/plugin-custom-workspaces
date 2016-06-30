@@ -1,4 +1,4 @@
-package com.codenvy.customerfactories;
+package com.codenvy.customerfactories.docker;
 
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;

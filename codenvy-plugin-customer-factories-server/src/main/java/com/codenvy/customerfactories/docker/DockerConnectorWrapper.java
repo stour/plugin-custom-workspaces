@@ -1,4 +1,4 @@
-package com.codenvy.customerfactories;
+package com.codenvy.customerfactories.docker;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.plugin.docker.client.DockerConnector;

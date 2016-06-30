@@ -6,6 +6,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import com.codenvy.customerfactories.docker.DockerConnectorWrapper;
+import com.codenvy.customerfactories.docker.DockerRecipe;
+
 import org.eclipse.che.api.auth.shared.dto.Credentials;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.Service;
@@ -23,7 +26,7 @@ import javax.ws.rs.Path;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static com.codenvy.customerfactories.DockerRecipe.INSTR_POSITION.BEFORE_CMD;
+import static com.codenvy.customerfactories.docker.DockerRecipe.INSTR_POSITION.BEFORE_CMD;
 
 @Api(
         value = "/customerfactories",

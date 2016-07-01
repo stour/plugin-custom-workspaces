@@ -30,12 +30,6 @@ import java.util.stream.Collectors;
 
 public class DockerRecipe {
 
-    public enum INSTR_POSITION {
-        FIRST,
-        LAST,
-        BEFORE_CMD
-    }
-
     @Inject
     private HttpJsonRequestFactory httpJsonRequestFactory;
 
@@ -83,7 +77,7 @@ public class DockerRecipe {
         return content;
     }
 
-    public void addInstruction(String instruction, INSTR_POSITION position) {
+    public void addInstruction(String instruction, InstructionPosition position) {
         final List<String> lines = Arrays.asList(content.split("\n"));
 
         switch (position) {

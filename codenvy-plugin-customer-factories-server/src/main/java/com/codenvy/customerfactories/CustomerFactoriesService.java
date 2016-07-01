@@ -42,7 +42,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static com.codenvy.customerfactories.docker.DockerRecipe.INSTR_POSITION.BEFORE_CMD;
+import static com.codenvy.customerfactories.docker.InstructionPosition.BEFORE_CMD;
 
 @Api(
         value = "/customerfactories",

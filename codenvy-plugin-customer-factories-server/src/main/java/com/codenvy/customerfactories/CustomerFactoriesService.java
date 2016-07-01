@@ -49,8 +49,8 @@ public class CustomerFactoriesService extends Service {
     private static final String BASE_DOCKERFILE_URL       = "https://gist.githubusercontent.com/" +
                                                             "stour/70d87f9edc9bf3d8edb9fd24d346acc9/" +
                                                             "raw/c16a6ce3b7f835bed40474f48fc8aa311852999e/Dockerfile";
-    private static final String RSYNC_INSTRUCTION_PATTERN = "RUN rsync %s %s %s";
-    private static final String REGISTRY_URL              = "private.registry.org:5000";
+    private static final String RSYNC_INSTRUCTION_PATTERN = "rsync -avz -e \"ssh -i %s\" %s@%s:%s %s";
+    private static final String REGISTRY_URL              = "localhost:5000";
 
     private final FactoryConnector       factoryConnector;
     private final DockerConnectorWrapper dockerConnectorWrapper;

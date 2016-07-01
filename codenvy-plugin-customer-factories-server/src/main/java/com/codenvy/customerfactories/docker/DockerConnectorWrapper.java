@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 public class DockerConnectorWrapper {
 
@@ -36,11 +37,12 @@ public class DockerConnectorWrapper {
     /**
      * @param imageName
      * @param dockerfileContent
+     * @param contextFiles
      * @return the id of the created Docker image
      * @throws ServerException
      */
-    public String buildImageFromDockerfile(final String imageName, final String dockerfileContent) throws ServerException {
-        final File dockerfile;
+    public String buildImageFromDockerfile(final String imageName, final String dockerfileContent, File... contextFiles) throws ServerException {
+        File dockerfile;
         try {
             dockerfile = Files.createTempFile("Dockerfile", "." + imageName).toFile();
             FileWriter writer = new FileWriter(dockerfile);
@@ -50,7 +52,9 @@ public class DockerConnectorWrapper {
             throw new ServerException(e.getLocalizedMessage(), e);
         }
 
-        final BuildImageParams buildParams = BuildImageParams.create(dockerfile)
+        File[] files = Arrays.copyOf(contextFiles, contextFiles.length + 1);
+        files[contextFiles.length] = dockerfile;
+        final BuildImageParams buildParams = BuildImageParams.create(files)
                                                              .withRepository(imageName)
                                                              .withTag("latest");
         String imageId;

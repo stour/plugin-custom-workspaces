@@ -19,7 +19,6 @@ import io.swagger.annotations.ApiResponses;
 import com.codenvy.customerfactories.docker.DockerConnectorWrapper;
 import com.codenvy.customerfactories.docker.DockerRecipe;
 
-import org.eclipse.che.api.auth.shared.dto.Credentials;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -33,6 +32,10 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -70,7 +73,8 @@ public class CustomerFactoriesService extends Service {
                    @ApiResponse(code = 409, message = ""),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public SetupResponseDto setup(@ApiParam(value = "URL of customer system", required = true) String customerUrl,
-                                  @ApiParam(value = "Credentials to connect to customer system", required = true) Credentials customerCredentials,
+                                  @ApiParam(value = "User to connect to customer system", required = true) String customerUser,
+                                  @ApiParam(value = "Public key to connect to customer system", required = true) String customerPublicKey,
                                   @ApiParam(value = "List of all folders and files to copy", required = true) List<String> pathsToCopy,
                                   @ApiParam(value = "Name to use for the Docker image", required = true) String imageName,
                                   @ApiParam(value = "URL of the repository of the dev project", required = true) String repositoryUrl)
@@ -81,6 +85,18 @@ public class CustomerFactoriesService extends Service {
                                           .withHref(BASE_DOCKERFILE_URL)
                                           .withMethod("GET");
         final DockerRecipe recipe = new DockerRecipe(recipeLink);
+
+        // Store customer public key in a temp file
+        File publicKeyFile;
+        try {
+            publicKeyFile = Files.createTempFile(imageName, ".pub").toFile();
+            FileWriter writer = new FileWriter(publicKeyFile);
+            writer.write(customerPublicKey);
+            writer.close();
+        } catch (IOException e) {
+            throw new ServerException(e.getLocalizedMessage(), e);
+        }
+        final String publicKeyFilePath = publicKeyFile.getPath();
 
         // Add customer specific rysnc commands to Dockerfile
         String instruction = "";
@@ -99,8 +115,8 @@ public class CustomerFactoriesService extends Service {
         }
         recipe.addInstruction(instruction, BEFORE_CMD);
 
-        // Build Docker image based on newly created Dockerfile
-        dockerConnectorWrapper.buildImageFromDockerfile(imageName, recipe.getContent());
+        // Build Docker image based on newly created Dockerfile and file containing the customer public key
+        dockerConnectorWrapper.buildImageFromDockerfile(imageName, recipe.getContent(), publicKeyFile);
 
         // Push Docker image to the pre-configured registry
         dockerConnectorWrapper.pushImage(REGISTRY_URL, imageName);

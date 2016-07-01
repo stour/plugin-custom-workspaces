@@ -19,6 +19,8 @@ import io.swagger.annotations.ApiResponses;
 import com.codenvy.customerfactories.docker.DockerConnectorWrapper;
 import com.codenvy.customerfactories.docker.DockerRecipe;
 
+import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -31,6 +33,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -66,19 +69,27 @@ public class CustomerFactoriesService extends Service {
 
     @POST
     @Consumes(APPLICATION_JSON)
-    @ApiOperation(value = "Setup a new customer factory based on given parameters")
+    @Produces(APPLICATION_JSON)
+    @ApiOperation(value = "Setup a new customer factory based on given parameters",
+                  response = SetupResponseDto.class)
     @ApiResponses({@ApiResponse(code = 201, message = "The factory successfully created"),
                    @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
                    @ApiResponse(code = 403, message = "The user does not have access to create a new factory"),
                    @ApiResponse(code = 409, message = ""),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public SetupResponseDto setup(@ApiParam(value = "URL of customer system", required = true) String customerUrl,
-                                  @ApiParam(value = "User to connect to customer system", required = true) String customerUser,
-                                  @ApiParam(value = "Public key to connect to customer system", required = true) String customerPublicKey,
-                                  @ApiParam(value = "List of all folders and files to copy", required = true) List<String> pathsToCopy,
-                                  @ApiParam(value = "Name to use for the Docker image", required = true) String imageName,
-                                  @ApiParam(value = "URL of the repository of the dev project", required = true) String repositoryUrl)
-            throws ServerException {
+    public SetupResponseDto setup(
+            @ApiParam(value = "The configuration to create the new customer factory", required = true) SetupRequestDto setupRequestDto)
+            throws ApiException {
+
+        if (setupRequestDto == null) {
+            throw new BadRequestException("Customer setup object required");
+        }
+
+        final String customerUser = setupRequestDto.getCustomerUser();
+        final String customerUrl = setupRequestDto.getCustomerUrl();
+        final String customerPublicKey = setupRequestDto.getCustomerPublicKey();
+        final String imageName = setupRequestDto.getImageName();
+        final List<String> pathsToCopy = setupRequestDto.getPathsToCopy();
 
         // Get base Dockerfile (common to all customers, embed utilities needed by Codenvy)
         final Link recipeLink = DtoFactory.newDto(Link.class)

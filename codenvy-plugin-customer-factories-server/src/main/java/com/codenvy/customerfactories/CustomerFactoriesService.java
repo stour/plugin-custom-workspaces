@@ -88,6 +88,7 @@ public class CustomerFactoriesService extends Service {
         final String customerUser = setupRequestDto.getCustomerUser();
         final String customerUrl = setupRequestDto.getCustomerUrl();
         final String customerPublicKey = setupRequestDto.getCustomerPublicKey();
+        final String repositoryUrl = setupRequestDto.getRepositoryUrl();
         final String imageName = setupRequestDto.getImageName();
         final List<String> pathsToCopy = setupRequestDto.getPathsToCopy();
 
@@ -124,10 +125,10 @@ public class CustomerFactoriesService extends Service {
         }
         recipe.addInstruction(instruction, BEFORE_CMD);
 
-        // Build Docker image based on newly created Dockerfile and file containing the customer public key
+        // Build Docker image based on newly created Dockerfile
         dockerConnectorWrapper.buildImageFromDockerfile(imageName, recipe.getContent(), publicKeyFile);
 
-        // Push Docker image to the pre-configured registry
+        // Push Docker image to pre-configured registry
         dockerConnectorWrapper.pushImage(REGISTRY_URL, imageName);
 
         // Create a new Codenvy factory based on the Docker image and the repository of the dev project

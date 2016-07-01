@@ -114,11 +114,12 @@ public class CustomerFactoriesService extends Service {
             throw new ServerException(e.getLocalizedMessage(), e);
         }
 
+        // COPY public key file in Docker image
         final String publicKeyFileName = publicKeyFile.getName();
         final String publicKeyPath = BASE_DOCKERFILE_USER_FOLDER + publicKeyFileName;
         recipe.addCopyInstruction(publicKeyFileName, publicKeyPath, BEFORE_CMD);
 
-        // Add customer specific rysnc commands to Dockerfile
+        // RUN rsync commands in Docker image
         String command = "";
         for (int i = 0; i < pathsToCopy.size(); i++) {
             final String path = pathsToCopy.get(0);

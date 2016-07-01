@@ -81,10 +81,21 @@ public class DockerRecipe {
         return content;
     }
 
+    /**
+     *
+     * @param sourcePath
+     * @param destinationPath
+     * @param position
+     */
     public void addCopyInstruction(final String sourcePath, final String destinationPath, InstructionPosition position) {
         addInstruction("COPY " + sourcePath + " " + destinationPath, position);
     }
 
+    /**
+     *
+     * @param command
+     * @param position
+     */
     public void addRunInstruction(final String command, InstructionPosition position) {
         addInstruction("RUN " + command, position);
     }

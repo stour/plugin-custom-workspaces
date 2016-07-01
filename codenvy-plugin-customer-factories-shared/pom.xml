@@ -16,7 +16,7 @@
     <parent>
         <artifactId>codenvy-plugin-customer-factories-parent</artifactId>
         <groupId>org.eclipse.che</groupId>
-        <version>4.4.0-RC1-SNAPSHOT</version>
+        <version>4.5.0-RC1-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-plugin-customer-factories-shared</artifactId>
     <name>Codenvy Plugin :: Customer Factories :: Shared</name>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-dto</artifactId>
-            <version>4.4.0-RC1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>

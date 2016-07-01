@@ -82,8 +82,21 @@ public class CustomerFactoriesService extends Service {
                                           .withMethod("GET");
         final DockerRecipe recipe = new DockerRecipe(recipeLink);
 
-        // Add customer specific rysnc command to Dockerfile
-        final String instruction = String.format(RSYNC_INSTRUCTION_PATTERN, customerUrl, customerCredentials, pathsToCopy);
+        // Add customer specific rysnc commands to Dockerfile
+        String instruction = "";
+        for (int i = 0; i < pathsToCopy.size(); i++) {
+            final String path = pathsToCopy.get(0);
+            if (i == 0) {
+                instruction +=
+                        String.format("RUN " + RSYNC_INSTRUCTION_PATTERN + " && \\ \n", publicKeyFilePath, customerUser, customerUrl, path, path);
+            } else if (i == pathsToCopy.size()) {
+                instruction +=
+                        String.format("   " + RSYNC_INSTRUCTION_PATTERN, publicKeyFilePath, customerUser, customerUrl, path, path);
+            } else {
+                instruction +=
+                        String.format("   " + RSYNC_INSTRUCTION_PATTERN + " && \\ \n", publicKeyFilePath, customerUser, customerUrl, path, path);
+            }
+        }
         recipe.addInstruction(instruction, BEFORE_CMD);
 
         // Build Docker image based on newly created Dockerfile

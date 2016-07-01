@@ -51,12 +51,13 @@ import static com.codenvy.customerfactories.docker.DockerRecipe.INSTR_POSITION.B
 @Path("/customerfactories")
 public class CustomerFactoriesService extends Service {
 
-    private static final Logger LOG                       = LoggerFactory.getLogger(CustomerFactoriesService.class);
-    private static final String BASE_DOCKERFILE_URL       = "https://gist.githubusercontent.com/" +
-                                                            "stour/70d87f9edc9bf3d8edb9fd24d346acc9/" +
-                                                            "raw/c16a6ce3b7f835bed40474f48fc8aa311852999e/Dockerfile";
-    private static final String RSYNC_INSTRUCTION_PATTERN = "rsync -avz -e \"ssh -i %s\" %s@%s:%s %s";
-    private static final String REGISTRY_URL              = "localhost:5000";
+    private static final Logger LOG                         = LoggerFactory.getLogger(CustomerFactoriesService.class);
+    private static final String BASE_DOCKERFILE_URL         = "https://gist.githubusercontent.com/" +
+                                                              "stour/70d87f9edc9bf3d8edb9fd24d346acc9/" +
+                                                              "raw/c16a6ce3b7f835bed40474f48fc8aa311852999e/Dockerfile";
+    private static final String RSYNC_INSTRUCTION_PATTERN   = "rsync -avz -e \"ssh -i %s\" %s@%s:%s %s";
+    private static final String REGISTRY_URL                = "localhost:5000";
+    private static final String BASE_DOCKERFILE_USER_FOLDER = "/home/user/";
 
     private final FactoryConnector       factoryConnector;
     private final DockerConnectorWrapper dockerConnectorWrapper;
@@ -108,13 +109,16 @@ public class CustomerFactoriesService extends Service {
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage(), e);
         }
-        final String publicKeyFilePath = publicKeyFile.getPath();
+
+        final String publicKeyFileName = publicKeyFile.getName();
+        final String publicKeyPath = BASE_DOCKERFILE_USER_FOLDER + publicKeyFileName;
+        recipe.addInstruction("COPY " + publicKeyFileName + " " + publicKeyPath, BEFORE_CMD);
 
         // Add customer specific rysnc commands to Dockerfile
         String instruction = "";
         for (int i = 0; i < pathsToCopy.size(); i++) {
             final String path = pathsToCopy.get(0);
-            final String rsyncInstr = String.format(RSYNC_INSTRUCTION_PATTERN, publicKeyFilePath, customerUser, customerUrl, path, path);
+            final String rsyncInstr = String.format(RSYNC_INSTRUCTION_PATTERN, publicKeyPath, customerUser, customerUrl, path, path);
             if (i == 0) {
                 instruction += "RUN " + rsyncInstr + " && \\ \n";
             } else if (i == pathsToCopy.size()) {
@@ -125,7 +129,7 @@ public class CustomerFactoriesService extends Service {
         }
         recipe.addInstruction(instruction, BEFORE_CMD);
 
-        // Build Docker image based on newly created Dockerfile
+        // Build Docker image based on the updated Dockerfile
         dockerConnectorWrapper.buildImageFromDockerfile(imageName, recipe.getContent(), publicKeyFile);
 
         // Push Docker image to pre-configured registry

@@ -102,15 +102,13 @@ public class CustomerFactoriesService extends Service {
         String instruction = "";
         for (int i = 0; i < pathsToCopy.size(); i++) {
             final String path = pathsToCopy.get(0);
+            final String rsyncInstr = String.format(RSYNC_INSTRUCTION_PATTERN, publicKeyFilePath, customerUser, customerUrl, path, path);
             if (i == 0) {
-                instruction +=
-                        String.format("RUN " + RSYNC_INSTRUCTION_PATTERN + " && \\ \n", publicKeyFilePath, customerUser, customerUrl, path, path);
+                instruction += "RUN " + rsyncInstr + " && \\ \n";
             } else if (i == pathsToCopy.size()) {
-                instruction +=
-                        String.format("   " + RSYNC_INSTRUCTION_PATTERN, publicKeyFilePath, customerUser, customerUrl, path, path);
+                instruction += "    " + rsyncInstr;
             } else {
-                instruction +=
-                        String.format("   " + RSYNC_INSTRUCTION_PATTERN + " && \\ \n", publicKeyFilePath, customerUser, customerUrl, path, path);
+                instruction += "    " + rsyncInstr + " && \\ \n";
             }
         }
         recipe.addInstruction(instruction, BEFORE_CMD);

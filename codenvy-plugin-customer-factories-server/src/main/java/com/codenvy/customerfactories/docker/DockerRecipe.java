@@ -106,14 +106,29 @@ public class DockerRecipe {
         switch (position) {
             case FIRST:
                 // insert a new line right after FROM line
+                boolean containsFrom = false;
                 int j;
                 for (j = 0; j < lines.size(); j++) {
-                    if (lines.get(j).startsWith("FROM")) {
-                        break;
+                    final String line = lines.get(j).trim();
+                    if (containsFrom) {
+                        if (!line.endsWith("\\")) {
+                            break;
+                        }
+                    } else if (line.startsWith("FROM")) {
+                        if (!line.endsWith("\\")) {
+                            break;
+                        } else {
+                            containsFrom = true;
+                        }
                     }
                 }
-                lines.add(j + 1, instruction);
-                lines.add(j + 2, "\n");
+                if (containsFrom) {
+                    lines.add(j + 1, instruction);
+                    lines.add(j + 2, "\n");
+                } else {
+                    lines.add(0, instruction);
+                    lines.add(1, "\n");
+                }
                 content = lines.stream().collect(Collectors.joining("\n"));
                 break;
             case LAST:
@@ -124,13 +139,23 @@ public class DockerRecipe {
                 break;
             case BEFORE_CMD:
                 // if Dockerfile contains a CMD line then insert a new line right before
+                boolean containsCmd = false;
                 int i;
                 for (i = 0; i < lines.size(); i++) {
-                    if (lines.get(i).startsWith("CMD")) {
-                        break;
+                    final String line = lines.get(i).trim();
+                    if (containsCmd) {
+                        if (!line.endsWith("\\")) {
+                            break;
+                        }
+                    } else if (line.startsWith("CMD")) {
+                        if (!line.endsWith("\\")) {
+                            break;
+                        } else {
+                            containsCmd = true;
+                        }
                     }
                 }
-                if (i > 0) {
+                if (containsCmd) {
                     lines.add(i, instruction);
                     lines.add(i + 1, "\n");
                     // otherwise insert a new line at the end of the file

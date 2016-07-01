@@ -26,6 +26,7 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DockerRecipe {
 
@@ -96,10 +97,14 @@ public class DockerRecipe {
                 }
                 lines.add(j + 1, instruction);
                 lines.add(j + 2, "\n");
+                content = lines.stream().collect(Collectors.joining("\n"));
+                break;
             case LAST:
                 // insert a new line at the end of the file
                 lines.add(instruction);
                 lines.add("\n");
+                content = lines.stream().collect(Collectors.joining("\n"));
+                break;
             case BEFORE_CMD:
                 // if Dockerfile contains a CMD line then insert a new line right before
                 int i;
@@ -116,6 +121,9 @@ public class DockerRecipe {
                     lines.add(instruction);
                     lines.add("\n");
                 }
+                content = lines.stream().collect(Collectors.joining("\n"));
+                break;
+            default:
         }
     }
 }

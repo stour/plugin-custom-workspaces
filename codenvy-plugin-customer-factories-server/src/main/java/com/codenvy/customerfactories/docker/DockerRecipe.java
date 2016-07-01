@@ -77,7 +77,15 @@ public class DockerRecipe {
         return content;
     }
 
-    public void addInstruction(String instruction, InstructionPosition position) {
+    public void addCopyInstruction(final String sourcePath, final String destinationPath, InstructionPosition position) {
+        addInstruction("COPY " + sourcePath + " " + destinationPath, position);
+    }
+
+    public void addRunInstruction(final String command, InstructionPosition position) {
+        addInstruction("RUN " + command, position);
+    }
+
+    private void addInstruction(String instruction, InstructionPosition position) {
         final List<String> lines = Arrays.asList(content.split("\n"));
 
         switch (position) {

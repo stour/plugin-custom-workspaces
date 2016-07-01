@@ -112,22 +112,20 @@ public class CustomerFactoriesService extends Service {
 
         final String publicKeyFileName = publicKeyFile.getName();
         final String publicKeyPath = BASE_DOCKERFILE_USER_FOLDER + publicKeyFileName;
-        recipe.addInstruction("COPY " + publicKeyFileName + " " + publicKeyPath, BEFORE_CMD);
+        recipe.addCopyInstruction(publicKeyFileName, publicKeyPath, BEFORE_CMD);
 
         // Add customer specific rysnc commands to Dockerfile
-        String instruction = "";
+        String command = "";
         for (int i = 0; i < pathsToCopy.size(); i++) {
             final String path = pathsToCopy.get(0);
             final String rsyncInstr = String.format(RSYNC_INSTRUCTION_PATTERN, publicKeyPath, customerUser, customerUrl, path, path);
-            if (i == 0) {
-                instruction += "RUN " + rsyncInstr + " && \\ \n";
-            } else if (i == pathsToCopy.size()) {
-                instruction += "    " + rsyncInstr;
+            if (i == pathsToCopy.size() - 1) {
+                command += rsyncInstr;
             } else {
-                instruction += "    " + rsyncInstr + " && \\ \n";
+                command += rsyncInstr + " && ";
             }
         }
-        recipe.addInstruction(instruction, BEFORE_CMD);
+        recipe.addRunInstruction(command, BEFORE_CMD);
 
         // Build Docker image based on the updated Dockerfile
         dockerConnectorWrapper.buildImageFromDockerfile(imageName, recipe.getContent(), publicKeyFile);

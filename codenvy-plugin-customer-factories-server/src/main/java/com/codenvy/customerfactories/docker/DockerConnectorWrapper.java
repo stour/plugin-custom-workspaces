@@ -23,10 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
 
 public class DockerConnectorWrapper {
 
@@ -40,24 +37,11 @@ public class DockerConnectorWrapper {
 
     /**
      * @param imageName
-     * @param dockerfileContent
-     * @param contextFiles
+     * @param files
      * @return the id of the created Docker image
      * @throws ServerException
      */
-    public String buildImageFromDockerfile(final String imageName, final String dockerfileContent, File... contextFiles) throws ServerException {
-        File dockerfile;
-        try {
-            dockerfile = Files.createTempFile("Dockerfile", "." + imageName).toFile();
-            FileWriter writer = new FileWriter(dockerfile);
-            writer.write(dockerfileContent);
-            writer.close();
-        } catch (IOException e) {
-            throw new ServerException(e.getLocalizedMessage(), e);
-        }
-
-        File[] files = Arrays.copyOf(contextFiles, contextFiles.length + 1);
-        files[contextFiles.length] = dockerfile;
+    public String buildImageFromDockerfile(final String imageName, File... files) throws ServerException {
         final BuildImageParams buildParams = BuildImageParams.create(files)
                                                              .withRepository(imageName)
                                                              .withTag("latest");

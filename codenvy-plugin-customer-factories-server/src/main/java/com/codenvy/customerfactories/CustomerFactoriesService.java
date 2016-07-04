@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -104,36 +105,24 @@ public class CustomerFactoriesService extends Service {
         final DockerRecipe recipe = new DockerRecipe(recipeLink);
 
         // Store customer public key in a temp file
-        File publicKeyFile;
-        try {
-            publicKeyFile = Files.createTempFile(imageName, ".pub").toFile();
-            FileWriter writer = new FileWriter(publicKeyFile);
-            writer.write(customerPublicKey);
-            writer.close();
-        } catch (IOException e) {
-            throw new ServerException(e.getLocalizedMessage(), e);
-        }
+        final File publicKeyFile = createTempFile(imageName, ".pub", customerPublicKey);
 
-        // COPY public key file in Docker image
+        // Update Dockerfile to COPY public key file
         final String publicKeyFileName = publicKeyFile.getName();
         final String publicKeyPath = BASE_DOCKERFILE_USER_FOLDER + publicKeyFileName;
         recipe.addCopyInstruction(publicKeyFileName, publicKeyPath, BEFORE_CMD);
 
-        // RUN rsync commands in Docker image
-        String command = "";
-        for (int i = 0; i < pathsToCopy.size(); i++) {
-            final String path = pathsToCopy.get(0);
-            final String rsyncInstr = String.format(RSYNC_INSTRUCTION_PATTERN, publicKeyPath, customerUser, customerUrl, path, path);
-            if (i == pathsToCopy.size() - 1) {
-                command += rsyncInstr;
-            } else {
-                command += rsyncInstr + " && ";
-            }
+        // Update Dockerfile to RUN rsync commands
+        List<String> rsyncCommands = new ArrayList<>();
+        for (String path : pathsToCopy) {
+            final String rsyncCommand = String.format(RSYNC_INSTRUCTION_PATTERN, publicKeyPath, customerUser, customerUrl, path, path);
+            rsyncCommands.add(rsyncCommand);
         }
-        recipe.addRunInstruction(command, BEFORE_CMD);
+        recipe.addRunInstruction(rsyncCommands, BEFORE_CMD);
 
         // Build Docker image based on the updated Dockerfile
-        dockerConnectorWrapper.buildImageFromDockerfile(imageName, recipe.getContent(), publicKeyFile);
+        final File dockerfileFile = createTempFile("Dockerfile", "." + imageName, recipe.getContent());
+        dockerConnectorWrapper.buildImageFromDockerfile(imageName, dockerfileFile, publicKeyFile);
 
         // Push Docker image to pre-configured registry
         dockerConnectorWrapper.pushImage(REGISTRY_URL, imageName);
@@ -148,5 +137,18 @@ public class CustomerFactoriesService extends Service {
         return DtoFactory.newDto(SetupResponseDto.class)
                          .withImageAbsoluteName(imageAbsoluteName)
                          .withFactoryId(null);
+    }
+
+    private File createTempFile(final String prefix, final String suffix, final String content) throws ServerException {
+        File tempFile;
+        try {
+            tempFile = Files.createTempFile(prefix, suffix).toFile();
+            FileWriter writer = new FileWriter(tempFile);
+            writer.write(content);
+            writer.close();
+        } catch (IOException e) {
+            throw new ServerException(e.getLocalizedMessage(), e);
+        }
+        return tempFile;
     }
 }

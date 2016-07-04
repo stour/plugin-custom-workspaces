@@ -124,23 +124,21 @@ public class DockerRecipe {
         switch (position) {
             case FIRST:
                 // insert a new line right after FROM line
-                boolean containsFrom = false;
+                boolean instructionFromFound = false;
                 int j;
                 for (j = 0; j < lines.size(); j++) {
                     final String line = lines.get(j).trim();
-                    if (containsFrom) {
+                    if (line.startsWith("FROM")) {
+                        instructionFromFound = true;
+
+                    }
+                    if (instructionFromFound) {
                         if (!line.endsWith("\\")) {
                             break;
-                        }
-                    } else if (line.startsWith("FROM")) {
-                        if (!line.endsWith("\\")) {
-                            break;
-                        } else {
-                            containsFrom = true;
                         }
                     }
                 }
-                if (containsFrom) {
+                if (instructionFromFound) {
                     lines.add(j + 1, instruction);
                     lines.add(j + 2, "\n");
                 } else {
@@ -157,23 +155,20 @@ public class DockerRecipe {
                 break;
             case BEFORE_CMD:
                 // if Dockerfile contains a CMD line then insert a new line right before
-                boolean containsCmd = false;
+                boolean instructionCmdFound = false;
                 int i;
                 for (i = 0; i < lines.size(); i++) {
                     final String line = lines.get(i).trim();
-                    if (containsCmd) {
+                    if (line.startsWith("CMD")) {
+                        instructionCmdFound = true;
+                    }
+                    if (instructionCmdFound) {
                         if (!line.endsWith("\\")) {
                             break;
-                        }
-                    } else if (line.startsWith("CMD")) {
-                        if (!line.endsWith("\\")) {
-                            break;
-                        } else {
-                            containsCmd = true;
                         }
                     }
                 }
-                if (containsCmd) {
+                if (instructionCmdFound) {
                     lines.add(i, instruction);
                     lines.add(i + 1, "\n");
                     // otherwise insert a new line at the end of the file

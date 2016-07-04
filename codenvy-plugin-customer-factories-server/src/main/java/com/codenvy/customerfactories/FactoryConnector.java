@@ -23,6 +23,7 @@ import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpJsonResponse;
 import org.eclipse.che.api.factory.server.FactoryService;
 import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.machine.shared.dto.LimitsDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
@@ -60,29 +61,42 @@ public class FactoryConnector {
      * @return
      */
     public Factory createFactory(final String imageName, final String imageAbsoluteName, final String repositoryUrl) {
+        final String[] repositoryUrlSplit = repositoryUrl.split("/");
+        final String[] repositoryNameSplit = repositoryUrlSplit[repositoryUrlSplit.length - 1].split("\\.");
+        final String repositoryName = repositoryNameSplit[0];
 
         final SourceStorageDto projectSource = DtoFactory.newDto(SourceStorageDto.class)
-                                                         .withType("git")
-                                                         .withLocation(repositoryUrl);
+                                                         .withLocation(repositoryUrl)
+                                                         .withType("git");
         final ProjectConfigDto project = DtoFactory.newDto(ProjectConfigDto.class)
-                                                   .withSource(projectSource);
+                                                   .withName(repositoryName)
+                                                   .withSource(projectSource)
+                                                   .withPath("/" + repositoryName)
+                                                   .withMixins(Lists.newArrayList("git"));
 
         final MachineSourceDto machineSource = DtoFactory.newDto(MachineSourceDto.class)
                                                          .withType("dockerfile")
                                                          .withContent("FROM " + imageAbsoluteName);
+        final LimitsDto machineLimits = DtoFactory.newDto(LimitsDto.class).withRam(3000);
         final MachineConfigDto machineConfig = DtoFactory.newDto(MachineConfigDto.class)
-                                                         .withDev(true)
+                                                         .withName("dev-machine")
                                                          .withType("docker")
+                                                         .withDev(true)
+                                                         .withLimits(machineLimits)
                                                          .withSource(machineSource);
         final EnvironmentDto environment = DtoFactory.newDto(EnvironmentDto.class)
+                                                     .withName("default")
                                                      .withMachineConfigs(Lists.newArrayList(machineConfig));
 
         final WorkspaceConfigDto workspace = DtoFactory.newDto(WorkspaceConfigDto.class)
+                                                       .withName("workspace")
                                                        .withProjects(Lists.newArrayList(project))
-                                                       .withEnvironments(Lists.newArrayList(environment));
+                                                       .withEnvironments(Lists.newArrayList(environment))
+                                                       .withDefaultEnv("default");
         return DtoFactory.newDto(Factory.class)
                          .withName("factory-" + imageName)
-                         .withWorkspace(workspace);
+                         .withWorkspace(workspace)
+                         .withV("4.0");
     }
 
     /**

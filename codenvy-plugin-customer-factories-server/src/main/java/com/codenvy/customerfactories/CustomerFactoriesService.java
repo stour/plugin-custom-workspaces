@@ -121,7 +121,7 @@ public class CustomerFactoriesService extends Service {
         recipe.addRunInstruction(rsyncCommands, BEFORE_CMD);
 
         // Build Docker image based on the updated Dockerfile
-        final File dockerfileFile = createTempFile("Dockerfile", "." + imageName, recipe.getContent());
+        final File dockerfileFile = createTempFile("Dockerfile", "", recipe.getContent());
         dockerConnectorWrapper.buildImage(imageName, dockerfileFile, publicKeyFile);
 
         // Push Docker image to pre-configured registry

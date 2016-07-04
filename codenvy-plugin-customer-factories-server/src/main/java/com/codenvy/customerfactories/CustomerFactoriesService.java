@@ -122,21 +122,22 @@ public class CustomerFactoriesService extends Service {
 
         // Build Docker image based on the updated Dockerfile
         final File dockerfileFile = createTempFile("Dockerfile", "", recipe.getContent());
-        dockerConnectorWrapper.buildImage(imageName, dockerfileFile, publicKeyFile);
+        final String imageId = dockerConnectorWrapper.buildImage(imageName, dockerfileFile, publicKeyFile);
 
         // Push Docker image to pre-configured registry
-        dockerConnectorWrapper.pushImage(REGISTRY_URL, imageName);
+        final String pushDigest = dockerConnectorWrapper.pushImage(REGISTRY_URL, imageName);
 
         // Create a new Codenvy factory based on the Docker image and the repository of the dev project
         final String imageAbsoluteName = REGISTRY_URL + "/" + imageName;
         final Factory factory = factoryConnector.createFactory(imageName, imageAbsoluteName, repositoryUrl);
 
         // Save the new factory
-        factoryConnector.saveFactory(factory);
+        final Factory savedFactory = factoryConnector.saveFactory(factory);
 
         return DtoFactory.newDto(SetupResponseDto.class)
                          .withImageAbsoluteName(imageAbsoluteName)
-                         .withFactoryId(null);
+                         .withImageId(imageId)
+                         .withFactoryId(savedFactory.getId());
     }
 
     private File createTempFile(final String prefix, final String suffix, final String content) throws ServerException {

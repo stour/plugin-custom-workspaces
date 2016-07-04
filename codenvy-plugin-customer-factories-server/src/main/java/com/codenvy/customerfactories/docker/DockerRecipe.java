@@ -47,7 +47,7 @@ public class DockerRecipe {
         final String url = link.getHref();
         final String method = link.getMethod();
 
-        HttpJsonRequest request = httpJsonRequestFactory.fromUrl(url).setMethod(method);
+        final HttpJsonRequest request = httpJsonRequestFactory.fromUrl(url).setMethod(method);
 
         HttpJsonResponse response;
         try {
@@ -67,7 +67,7 @@ public class DockerRecipe {
         }
 
         if (response == null) {
-            throw new ServerException("A problem occurred while downloading recipe.");
+            throw new ServerException("A problem occurred while downloading recipe " + url + ".");
         }
 
         content = response.asString();
@@ -106,16 +106,16 @@ public class DockerRecipe {
      * @param position
      */
     public void addRunInstruction(final List<String> commands, InstructionPosition position) {
-        String concatenatedCommand = "";
+        String concatedCommand = "";
         for (int i = 0; i < commands.size(); i++) {
             final String command = commands.get(0);
             if (i == commands.size() - 1) {
-                concatenatedCommand += command;
+                concatedCommand += command;
             } else {
-                concatenatedCommand += command + " && ";
+                concatedCommand += command + " && ";
             }
         }
-        addRunInstruction(concatenatedCommand, position);
+        addRunInstruction(concatedCommand, position);
     }
 
     private void addInstruction(String instruction, InstructionPosition position) {

@@ -122,7 +122,7 @@ public class CustomerFactoriesService extends Service {
 
         // Build Docker image based on the updated Dockerfile
         final File dockerfileFile = createTempFile("Dockerfile", "." + imageName, recipe.getContent());
-        dockerConnectorWrapper.buildImageFromDockerfile(imageName, dockerfileFile, publicKeyFile);
+        dockerConnectorWrapper.buildImage(imageName, dockerfileFile, publicKeyFile);
 
         // Push Docker image to pre-configured registry
         dockerConnectorWrapper.pushImage(REGISTRY_URL, imageName);

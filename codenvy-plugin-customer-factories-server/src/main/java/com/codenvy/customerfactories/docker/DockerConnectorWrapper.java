@@ -41,7 +41,7 @@ public class DockerConnectorWrapper {
      * @return the id of the created Docker image
      * @throws ServerException
      */
-    public String buildImageFromDockerfile(final String imageName, File... files) throws ServerException {
+    public String buildImage(final String imageName, File... files) throws ServerException {
         final BuildImageParams buildParams = BuildImageParams.create(files)
                                                              .withRepository(imageName)
                                                              .withTag("latest");

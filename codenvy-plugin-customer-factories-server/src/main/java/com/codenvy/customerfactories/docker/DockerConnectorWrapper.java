@@ -66,9 +66,10 @@ public class DockerConnectorWrapper {
 
     /**
      * @param repositoryName
+     * @return the digest of the push operation
      * @throws ServerException
      */
-    public void pushImage(String registryUrl, String repositoryName) throws ServerException {
+    public String pushImage(String registryUrl, String repositoryName) throws ServerException {
         final PushParams pushParams = PushParams.create(repositoryName)
                                                 .withRegistry(registryUrl);
         String digest;
@@ -86,5 +87,7 @@ public class DockerConnectorWrapper {
         if (digest == null) {
             throw new ServerException("A problem occurred during pushing of the Docker image");
         }
+
+        return digest;
     }
 }

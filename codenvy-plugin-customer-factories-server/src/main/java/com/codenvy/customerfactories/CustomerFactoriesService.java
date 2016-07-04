@@ -109,13 +109,13 @@ public class CustomerFactoriesService extends Service {
 
         // Update Dockerfile to COPY public key file
         final String publicKeyFileName = publicKeyFile.getName();
-        final String publicKeyPath = BASE_DOCKERFILE_USER_FOLDER + publicKeyFileName;
-        recipe.addCopyInstruction(publicKeyFileName, publicKeyPath, BEFORE_CMD);
+        final String publicKeyImagePath = BASE_DOCKERFILE_USER_FOLDER + publicKeyFileName;
+        recipe.addCopyInstruction(publicKeyFileName, publicKeyImagePath, BEFORE_CMD);
 
         // Update Dockerfile to RUN rsync commands
         List<String> rsyncCommands = new ArrayList<>();
         for (String path : pathsToCopy) {
-            final String rsyncCommand = String.format(RSYNC_INSTRUCTION_PATTERN, publicKeyPath, customerUser, customerUrl, path, path);
+            final String rsyncCommand = String.format(RSYNC_INSTRUCTION_PATTERN, publicKeyImagePath, customerUser, customerUrl, path, path);
             rsyncCommands.add(rsyncCommand);
         }
         recipe.addRunInstruction(rsyncCommands, BEFORE_CMD);

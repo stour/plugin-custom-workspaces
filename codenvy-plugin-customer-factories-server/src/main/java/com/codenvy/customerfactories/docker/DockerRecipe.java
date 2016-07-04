@@ -106,16 +106,16 @@ public class DockerRecipe {
      * @param position
      */
     public void addRunInstruction(final List<String> commands, InstructionPosition position) {
-        String concatedCommand = "";
+        String concatenatedCommand = "";
         for (int i = 0; i < commands.size(); i++) {
             final String command = commands.get(0);
             if (i == commands.size() - 1) {
-                concatedCommand += command;
+                concatenatedCommand += command;
             } else {
-                concatedCommand += command + " && ";
+                concatenatedCommand += command + " && ";
             }
         }
-        addRunInstruction(concatedCommand, position);
+        addRunInstruction(concatenatedCommand, position);
     }
 
     private void addInstruction(String instruction, InstructionPosition position) {

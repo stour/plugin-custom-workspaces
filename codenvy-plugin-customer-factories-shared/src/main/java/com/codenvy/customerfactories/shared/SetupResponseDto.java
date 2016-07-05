@@ -12,7 +12,7 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.customerfactories;
+package com.codenvy.customerfactories.shared;
 
 import org.eclipse.che.dto.shared.DTO;
 

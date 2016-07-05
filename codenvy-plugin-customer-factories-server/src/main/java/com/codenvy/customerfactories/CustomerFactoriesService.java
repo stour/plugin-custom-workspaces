@@ -22,6 +22,8 @@ import io.swagger.annotations.ApiResponses;
 
 import com.codenvy.customerfactories.docker.DockerConnectorWrapper;
 import com.codenvy.customerfactories.docker.DockerRecipe;
+import com.codenvy.customerfactories.shared.SetupRequestDto;
+import com.codenvy.customerfactories.shared.SetupResponseDto;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.BadRequestException;

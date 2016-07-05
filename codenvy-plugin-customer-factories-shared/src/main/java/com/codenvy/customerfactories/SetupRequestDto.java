@@ -79,4 +79,14 @@ public interface SetupRequestDto {
     void setRepositoryUrl(String repositoryUrl);
 
     SetupRequestDto withRepositoryUrl(String repositoryUrl);
+
+    /**
+     * URL of the Docker registry to use
+     *
+     */
+    String getRegistryUrl();
+
+    void setRegistryUrl(String registryUrl);
+
+    SetupRequestDto withRegistryUrl(String registryUrl);
 }

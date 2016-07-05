@@ -61,7 +61,6 @@ public class CustomerFactoriesService extends Service {
                                                               "stour/70d87f9edc9bf3d8edb9fd24d346acc9/" +
                                                               "raw/c16a6ce3b7f835bed40474f48fc8aa311852999e/Dockerfile";
     private static final String RSYNC_INSTRUCTION_PATTERN   = "rsync -avz -e \"ssh -i %s\" %s@%s:%s %s";
-    private static final String REGISTRY_URL                = "localhost:5000";
     private static final String BASE_DOCKERFILE_USER_FOLDER = "/home/user/";
 
     private final FactoryConnector       factoryConnector;
@@ -97,6 +96,7 @@ public class CustomerFactoriesService extends Service {
         final String repositoryUrl = setupRequestDto.getRepositoryUrl();
         final String imageName = setupRequestDto.getImageName();
         final List<String> pathsToCopy = setupRequestDto.getPathsToCopy();
+        final String registryUrl = setupRequestDto.getRegistryUrl();
 
         // Get base Dockerfile (common to all customers, embed utilities needed by Codenvy)
         final Link recipeLink = DtoFactory.newDto(Link.class)
@@ -125,10 +125,10 @@ public class CustomerFactoriesService extends Service {
         final String imageId = dockerConnectorWrapper.buildImage(imageName, dockerfileFile, publicKeyFile);
 
         // Push Docker image to pre-configured registry
-        final String pushDigest = dockerConnectorWrapper.pushImage(REGISTRY_URL, imageName);
+        final String pushDigest = dockerConnectorWrapper.pushImage(registryUrl, imageName);
 
         // Create a new Codenvy factory based on the Docker image and the repository of the dev project
-        final String imageAbsoluteName = REGISTRY_URL + "/" + imageName;
+        final String imageAbsoluteName = registryUrl + "/" + imageName;
         final Factory factory = factoryConnector.createFactory(imageName, imageAbsoluteName, repositoryUrl);
 
         // Save the new factory

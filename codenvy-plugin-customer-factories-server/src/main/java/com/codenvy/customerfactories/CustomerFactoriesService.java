@@ -46,8 +46,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static com.codenvy.customerfactories.docker.InstructionPosition.BEFORE_CMD;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Api(
         value = "/customerfactories",
@@ -77,17 +78,19 @@ public class CustomerFactoriesService extends Service {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Setup a new customer factory based on given parameters",
                   response = SetupResponseDto.class)
-    @ApiResponses({@ApiResponse(code = 201, message = "The factory successfully created"),
+    @ApiResponses({@ApiResponse(code = 201, message = "Factory successfully created"),
                    @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
-                   @ApiResponse(code = 403, message = "The user does not have access to create a new factory"),
-                   @ApiResponse(code = 409, message = ""),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public SetupResponseDto setup(
             @ApiParam(value = "The configuration to create the new customer factory", required = true) SetupRequestDto setupRequestDto)
             throws ApiException {
 
-        if (setupRequestDto == null) {
-            throw new BadRequestException("Customer setup object required");
+        if (setupRequestDto == null || setupRequestDto.getPathsToCopy() == null || setupRequestDto.getPathsToCopy().size() == 0 ||
+            isNullOrEmpty(setupRequestDto.getCustomerUser()) || isNullOrEmpty(setupRequestDto.getCustomerUrl()) ||
+            isNullOrEmpty(setupRequestDto.getCustomerPublicKey()) || isNullOrEmpty(setupRequestDto.getRepositoryUrl()) ||
+            isNullOrEmpty(setupRequestDto.getImageName()) || isNullOrEmpty(setupRequestDto.getRegistryUrl())) {
+
+            throw new BadRequestException("All setup request fields are mandatory.");
         }
 
         final String customerUser = setupRequestDto.getCustomerUser();

@@ -27,9 +27,15 @@ import com.codenvy.customerfactories.shared.SetupResponseDto;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.BadRequestException;
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.UnauthorizedException;
+import org.eclipse.che.api.core.rest.HttpJsonRequest;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
+import org.eclipse.che.api.core.rest.HttpJsonResponse;
 import org.eclipse.che.api.core.rest.Service;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
@@ -44,6 +50,8 @@ import javax.ws.rs.Produces;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,11 +76,14 @@ public class CustomerFactoriesService extends Service {
 
     private final FactoryConnector       factoryConnector;
     private final DockerConnectorWrapper dockerConnectorWrapper;
+    private final HttpJsonRequestFactory httpJsonRequestFactory;
 
     @Inject
-    public CustomerFactoriesService(final FactoryConnector factoryConnector, final DockerConnectorWrapper dockerConnectorWrapper) {
+    public CustomerFactoriesService(final FactoryConnector factoryConnector, final DockerConnectorWrapper dockerConnectorWrapper,
+                                    final HttpJsonRequestFactory httpJsonRequestFactory) {
         this.factoryConnector = factoryConnector;
         this.dockerConnectorWrapper = dockerConnectorWrapper;
+        this.httpJsonRequestFactory = httpJsonRequestFactory;
     }
 
     @POST
@@ -104,10 +115,14 @@ public class CustomerFactoriesService extends Service {
         final String registryUrl = setupRequestDto.getRegistryUrl();
 
         // Get base Dockerfile (common to all customers, embed utilities needed by Codenvy)
-        final Link recipeLink = DtoFactory.newDto(Link.class)
-                                          .withHref(BASE_DOCKERFILE_URL)
-                                          .withMethod("GET");
-        final DockerRecipe recipe = new DockerRecipe(recipeLink);
+        String content;
+        try {
+            content = resolveRecipeContent(new URL(BASE_DOCKERFILE_URL));
+        } catch (MalformedURLException e) {
+            throw new ServerException(e.getLocalizedMessage());
+        }
+
+        final DockerRecipe recipe = new DockerRecipe(content);
 
         // Store customer public key in a temp file
         final File publicKeyFile = createTempFile(imageName, ".pub", customerPublicKey);
@@ -143,6 +158,33 @@ public class CustomerFactoriesService extends Service {
                          .withImageAbsoluteName(imageAbsoluteName)
                          .withImageId(imageId)
                          .withFactoryId(savedFactory.getId());
+    }
+
+    private String resolveRecipeContent(URL url) throws ServerException {
+        final HttpJsonRequest request = httpJsonRequestFactory.fromUrl(url.toExternalForm()).setMethod("GET");
+
+        HttpJsonResponse response;
+        try {
+            response = request.request();
+        } catch (IOException e) {
+            throw new ServerException(e);
+        } catch (UnauthorizedException e) {
+            throw new ServerException(e);
+        } catch (ForbiddenException e) {
+            throw new ServerException(e);
+        } catch (NotFoundException e) {
+            throw new ServerException(e);
+        } catch (ConflictException e) {
+            throw new ServerException(e);
+        } catch (BadRequestException e) {
+            throw new ServerException(e);
+        }
+
+        if (response == null) {
+            throw new ServerException("A problem occurred while downloading recipe " + url + ".");
+        }
+
+        return response.asString();
     }
 
     private File createTempFile(final String prefix, final String suffix, final String content) throws ServerException {

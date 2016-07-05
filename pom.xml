@@ -20,7 +20,7 @@
     <parent>
         <artifactId>onpremises-assembly-parent</artifactId>
         <groupId>com.codenvy.onpremises</groupId>
-        <version>4.5.0-RC1-SNAPSHOT</version>
+        <version>4.4.0</version>
     </parent>
     <groupId>com.codenvy</groupId>
     <artifactId>codenvy-plugin-customer-factories-parent</artifactId>
